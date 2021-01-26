@@ -88,4 +88,4 @@ const val MAGIC_PACKAGE_MANAGER = PACKAGE_MANAGER_SENTINEL
 const val ANCESTRAL_RECORD_KEY = "@ancestral_record@"
 const val GLOBAL_METADATA_KEY = "@meta@"
 
-fun isDebugBuild() = Build.TYPE == "userdebug"
+fun isDebugBuild() = Build.TYPE == "eng"
