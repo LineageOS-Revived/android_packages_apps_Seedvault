@@ -195,11 +195,19 @@ internal class StorageRootFetcher(private val context: Context, private val isRe
             data = Uri.parse("nc://login/server:")
             putExtra("onlyAdd", true)
         }
+        val marketIntent =
+            Intent(ACTION_VIEW, Uri.parse("market://details?id=$NEXTCLOUD_PACKAGE")).apply {
+                addFlags(FLAG_ACTIVITY_NEW_TASK)
+            }
         val isInstalled = packageManager.resolveActivity(intent, 0) != null
+        val canInstall = packageManager.resolveActivity(marketIntent, 0) != null
         val summaryRes = if (isInstalled) {
             if (isRestore) R.string.storage_fake_nextcloud_summary_installed
             else R.string.storage_fake_nextcloud_summary_unavailable
-        } else R.string.storage_fake_nextcloud_summary
+        } else {
+            if (canInstall) R.string.storage_fake_nextcloud_summary
+            else R.string.storage_fake_nextcloud_summary_unavailable_market
+        }
         val root = StorageRoot(
                 authority = AUTHORITY_NEXTCLOUD,
                 rootId = "fake",
@@ -209,15 +217,10 @@ internal class StorageRootFetcher(private val context: Context, private val isRe
                 summary = context.getString(summaryRes),
                 availableBytes = null,
                 isUsb = false,
-                enabled = !isInstalled || isRestore,
+                enabled = !isInstalled || canInstall,
                 overrideClickListener = {
                     if (isInstalled) context.startActivity(intent)
-                    else {
-                        val uri = Uri.parse("market://details?id=$NEXTCLOUD_PACKAGE")
-                        val i = Intent(ACTION_VIEW, uri)
-                        i.addFlags(FLAG_ACTIVITY_NEW_TASK)
-                        context.startActivity(i)
-                    }
+                    else if (canInstall) context.startActivity(marketIntent)
                 }
         )
         roots.add(root)
